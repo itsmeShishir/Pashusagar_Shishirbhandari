@@ -201,10 +201,10 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'motivate23a@gmail.com'
-EMAIL_HOST_PASSWORD = 'tbiiznxpsutbefnp'
+EMAIL_HOST_PASSWORD = 'tbiiznxpsutbefawdawdnp'
 DEFAULT_FROM_EMAIL = 'pawansagar@gmail.com'  
 
-GOOGLE_CLIENT_ID = "387800676261-j4sj0haaig4sfdqtab8e59cg4m515g8g.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"
 
 CHANNEL_LAYERS = {
     "default": {
