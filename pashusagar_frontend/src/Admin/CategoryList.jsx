@@ -9,7 +9,7 @@ const CategoryList = ({ onAddCategory, onEditCategory }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
         fetchCategories();

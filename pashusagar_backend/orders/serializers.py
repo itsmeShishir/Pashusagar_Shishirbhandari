@@ -1,24 +1,21 @@
-# orders/serializers.py
 from django.db import transaction
 from rest_framework import serializers
 
 from .models import Order, OrderItem
-from products.models import Product, Appointment
+from products.models import Product
+from products.models import Appointment  # For history
+from products.serializers import AppointmentSerializer
 
 
+# ========================
+# Order Items (Output)
+# ========================
 class OrderItemSerializer(serializers.ModelSerializer):
-    """Serializer used when reading orders (GET)."""
-
     product_details = serializers.SerializerMethodField()
-
-    # Accept product ID when writing
-    product = serializers.PrimaryKeyRelatedField(
-        queryset=Product.objects.all(), write_only=True
-    )
 
     class Meta:
         model = OrderItem
-        fields = ["product", "product_details", "quantity"]
+        fields = ["id", "product_details", "quantity"]
 
     def get_product_details(self, obj):
         product = obj.product
@@ -29,23 +26,21 @@ class OrderItemSerializer(serializers.ModelSerializer):
             "images": product.images.url if product.images else None,
         }
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        # Replace product ID with expanded product information when returning data
-        data["product"] = data.pop("product_details")
-        return data
 
-
+# ========================
+# Order Items (Input)
+# ========================
 class OrderItemInputSerializer(serializers.Serializer):
-    """Serializer used for incoming cart items."""
-
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
-    quantity = serializers.IntegerField(min_value=1, default=1)
+    quantity = serializers.IntegerField(min_value=1)
 
 
+# ========================
+# ORDER SERIALIZER
+# ========================
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemInputSerializer(many=True, write_only=True)
-    user = serializers.SerializerMethodField(read_only=True)
+    user = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -64,7 +59,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "shipping_state",
             "shipping_zip",
         ]
-        read_only_fields = ["id", "khalti_pidx", "created_at", "payment_status"]
+        read_only_fields = ["id", "created_at", "payment_status", "khalti_pidx"]
 
     def get_user(self, obj):
         return {
@@ -75,60 +70,36 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        items_serializer = OrderItemSerializer(instance.items.all(), many=True)
-        data["items"] = items_serializer.data
+        data["items"] = OrderItemSerializer(instance.items.all(), many=True).data
         return data
 
-    def validate_items(self, value):
-        if not value:
-            raise serializers.ValidationError("At least one item is required.")
-        return value
-
     def create(self, validated_data):
-        items_data = validated_data.pop("items", [])
+        items_data = validated_data.pop("items")
         validated_data["user"] = self.context["request"].user
-
-        print("DEBUG - Items data received:", items_data)
-        print("DEBUG - Validated data:", validated_data)
 
         with transaction.atomic():
             order = Order.objects.create(**validated_data)
 
-            for item_data in items_data:
-                product = item_data.get("product")
-                quantity = item_data.get("quantity", 1)
-
-                # Safety net: if we somehow only received a raw ID, resolve it now.
-                if isinstance(product, int):
-                    product = Product.objects.filter(id=product).first()
-                if product is None:
-                    raise serializers.ValidationError(
-                        "Each item must include a valid product."
-                    )
-
-                print(
-                    f"DEBUG - Creating OrderItem: product_id={product.id}, quantity={quantity}"
-                )
-
-                OrderItem.objects.create(order=order, product=product, quantity=quantity)
-                print(
-                    f"DEBUG - Successfully created OrderItem for product {product.title}"
+            for item in items_data:
+                OrderItem.objects.create(
+                    order=order,
+                    product=item["product"],   # Already a Product instance
+                    quantity=item["quantity"]
                 )
 
         return order
 
 
-class AppointmentSerializer(serializers.ModelSerializer):
-    customer_name = serializers.ReadOnlyField(source="customer.username")
+class OrderSerializers(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
 
     class Meta:
-        model = Appointment
+        model = Order
         fields = [
             "id",
-            "customer",
-            "customer_name",
-            "pet_name",
-            "appointment_date",
-            "description",
-            "is_confirmed",
+            "user",
+            "payment_method",
+            "payment_status",
+            "created_at",
+            "items",   # MUST contain full product data
         ]

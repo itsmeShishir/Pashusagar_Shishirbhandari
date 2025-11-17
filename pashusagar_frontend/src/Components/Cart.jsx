@@ -215,14 +215,28 @@ const Cart = () => {
 
       // 8b. Handle response based on payment method
       if (paymentMethod === 'Khalti') {
-        if (response.data.success && response.data.payment_url) {
-          // Store order info before redirect
-          localStorage.setItem('pending_order_id', response.data.order_id);
+        const paymentUrl =
+          response?.data?.payment_url || response?.data?.data?.payment_url;
+        const orderId = response?.data?.order_id || response?.data?.data?.order_id;
 
-          // Redirect to Khalti payment page
-          window.location.href = response.data.payment_url;
+        if (paymentUrl) {
+          if (orderId) {
+            localStorage.setItem('pending_order_id', orderId);
+          }
+
+          console.log("Redirecting to Khalti:", paymentUrl);
+
+          const popup = window.open(paymentUrl, "_self");
+          if (!popup) {
+            window.location.assign(paymentUrl);
+          }
         } else {
-          setError(response.data.error || "Failed to initiate Khalti payment. Please try again.");
+          const khaltiError =
+            response?.data?.error ||
+            response?.data?.detail ||
+            response?.data?.message ||
+            "Failed to initiate Khalti payment. Please try again.";
+          setError(khaltiError);
         }
       } else {
         // 8c. Cash on Delivery success

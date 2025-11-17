@@ -1,4 +1,3 @@
-# orders/models.py
 from django.db import models
 from django.conf import settings
 from products.models import Product
@@ -28,12 +27,9 @@ class Order(models.Model):
         max_length=20, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True
     )
 
-    # Store Khalti pidx if you want server-to-server verification via pidx
     khalti_pidx = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
-    #
-    # SHIPPING FIELDS
-    #
+    # Shipping fields
     shipping_name = models.CharField(max_length=100, blank=True, null=True)
     shipping_phone = models.CharField(max_length=20, blank=True, null=True)
     shipping_address = models.TextField(blank=True, null=True)
@@ -43,6 +39,7 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order {self.id} by {self.user.username}"
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(
@@ -54,4 +51,4 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return f"{self.quantity} x {self.product.title}"
+        return f"{self.quantity} × {self.product.title}"

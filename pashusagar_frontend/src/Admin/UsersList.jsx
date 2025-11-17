@@ -12,10 +12,17 @@ const UsersList = () => {
   useEffect(() => {
     fetchUsers()
   }, [])
+  const token = localStorage.getItem("token");
+  const config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      };
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get("/auth/users/")
+      const response = await api.get("/auth/users/", config)
       setUsers(response.data)
       setLoading(false)
     } catch (err) {

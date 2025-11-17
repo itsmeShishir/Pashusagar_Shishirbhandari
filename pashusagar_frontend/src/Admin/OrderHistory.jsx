@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
-import { Package, Calendar, User, CreditCard, Filter, RefreshCw } from "lucide-react";
+import { Package, Calendar, User, Filter, RefreshCw } from "lucide-react";
 
 const OrderHistory = () => {
     const [orders, setOrders] = useState([]);
@@ -19,17 +19,25 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
         try {
             setLoading(true);
-            const params = new URLSearchParams();
-            if (filters.status) params.append("status", filters.status);
-            if (filters.payment_method) params.append("payment_method", filters.payment_method);
+            const response = await api.get("/admin/orders/", {
+                params: {
+                    status: filters.status || undefined,
+                    payment_method: filters.payment_method || undefined,
+                },
+            });
 
-            const response = await api.get(`/admin/orders/?${params.toString()}`);
             setOrders(response.data.orders);
             setTotalOrders(response.data.total_orders);
             setLoading(false);
         } catch (err) {
             console.error("Error fetching orders:", err);
-            setError("Failed to fetch orders.");
+            if (err.response?.status === 401) {
+                setError("Please log in as an admin to view orders.");
+            } else if (err.response?.status === 403) {
+                setError("You do not have permission to view orders.");
+            } else {
+                setError(err.message);
+            }
             setLoading(false);
         }
     };
@@ -41,12 +49,15 @@ const OrderHistory = () => {
                 status: newStatus,
             });
 
-            // Refresh orders after update
             fetchOrders();
             alert(`Order ${orderId} status updated to ${newStatus}`);
         } catch (err) {
             console.error("Error updating order status:", err);
-            alert("Failed to update order status");
+            const message =
+                err.response?.data?.error ||
+                err.response?.data?.detail ||
+                "Failed to update order status";
+            alert(message);
         }
     };
 
@@ -78,7 +89,7 @@ const OrderHistory = () => {
 
     const calculateOrderTotal = (items) => {
         return items.reduce((total, item) => {
-            return total + (item.product.price * item.quantity);
+            return total + (item.product_details?.price || 0) * item.quantity;
         }, 0);
     };
 
@@ -153,15 +164,11 @@ const OrderHistory = () => {
                     orders.map((order) => (
                         <div key={order.id} className="bg-white rounded-lg shadow-md p-6">
                             <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center space-x-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-800">
-                                            Order #{order.id}
-                                        </h3>
-                                        <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
-                                            <Calendar className="h-4 w-4" />
-                                            <span>{new Date(order.created_at).toLocaleDateString()}</span>
-                                        </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-800">Order #{order.id}</h3>
+                                    <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
+                                        <Calendar className="h-4 w-4" />
+                                        <span>{new Date(order.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>
 
@@ -177,45 +184,35 @@ const OrderHistory = () => {
                                 </div>
                             </div>
 
-                            {/* Customer Info */}
+                            {/* Customer */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div className="flex items-center space-x-2">
                                     <User className="h-4 w-4 text-gray-500" />
                                     <span className="text-sm text-gray-600">
-                                        Customer: {order.user.username} ({order.user.email})
+                                        Customer: {order.user}
                                     </span>
                                 </div>
-                                {order.shipping_name && (
-                                    <div className="text-sm text-gray-600">
-                                        <strong>Shipping:</strong> {order.shipping_name}
-                                        {order.shipping_phone && ` - ${order.shipping_phone}`}
-                                    </div>
-                                )}
                             </div>
-
-                            {/* Shipping Address */}
-                            {order.shipping_address && (
-                                <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                                    <p className="text-sm text-gray-600">
-                                        <strong>Address:</strong> {order.shipping_address}
-                                        {order.shipping_city && `, ${order.shipping_city}`}
-                                        {order.shipping_state && `, ${order.shipping_state}`}
-                                        {order.shipping_zip && ` - ${order.shipping_zip}`}
-                                    </p>
-                                </div>
-                            )}
 
                             {/* Order Items */}
                             <div className="mb-4">
                                 <h4 className="text-sm font-medium text-gray-700 mb-2">Items:</h4>
-                                <div className="space-y-2">
-                                    {order.items.map((item, index) => (
-                                        <div key={index} className="flex justify-between items-center text-sm">
-                                            <span>{item.product.title} x {item.quantity}</span>
-                                            <span className="font-medium">₹{(item.product.price * item.quantity).toFixed(2)}</span>
-                                        </div>
-                                    ))}
-                                </div>
+
+                                {order.items.length === 0 ? (
+                                    <p className="text-sm text-gray-500">No items</p>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {order.items.map((item, index) => (
+                                            <div key={index} className="flex justify-between items-center text-sm">
+                                                <span>{item.product_details?.title ?? "Unknown Product"} x {item.quantity}</span>
+                                                <span className="font-medium">
+                                                    ₹{((item.product_details?.price || 0) * item.quantity).toFixed(2)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div className="border-t pt-2 mt-2">
                                     <div className="flex justify-between items-center font-semibold">
                                         <span>Total:</span>
