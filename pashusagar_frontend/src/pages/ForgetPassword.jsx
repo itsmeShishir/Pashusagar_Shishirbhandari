@@ -1,7 +1,7 @@
 // src/pages/ForgotPassword.js
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
 import Navbar from "../Components/Navbar";
 
 const ForgotPassword = () => {
@@ -12,8 +12,7 @@ const ForgotPassword = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    axios
-      .post("http://127.0.0.1:8000/api/auth/password-reset/forgot/", { email })
+    api.post("/auth/password-reset/forgot/", { email })
       .then((response) => {
         setMessage("OTP sent to your email.");
         navigate("/resetpassword", { state: { email } });

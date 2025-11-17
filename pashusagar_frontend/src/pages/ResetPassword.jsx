@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import api from "../utils/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
@@ -42,15 +42,12 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/auth/password-reset/confirm/",
-        formData
-      );
-      
+      const response = await api.post("/auth/password-reset/confirm/", formData);
+
       toast.success("Password reset successfully!");
       setTimeout(() => {
         navigate("/login");
@@ -84,8 +81,8 @@ const ResetPassword = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="email"
                 >
                   Email Address
@@ -103,8 +100,8 @@ const ResetPassword = () => {
               </div>
 
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="otp"
                 >
                   OTP Code
@@ -121,8 +118,8 @@ const ResetPassword = () => {
               </div>
 
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="new_password"
                 >
                   New Password
@@ -139,8 +136,8 @@ const ResetPassword = () => {
               </div>
 
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="new_password2"
                 >
                   Confirm New Password
@@ -168,8 +165,8 @@ const ResetPassword = () => {
           </div>
         </div>
       </div>
-      <ToastContainer 
-        position="top-right" 
+      <ToastContainer
+        position="top-right"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={true}

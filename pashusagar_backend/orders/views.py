@@ -151,3 +151,81 @@ class HistoryListView(APIView):
             'orders': orders_serializer.data,
             'appointments': appointments_serializer.data,
         }, status=status.HTTP_200_OK)
+    
+
+class AdminOrderListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, format=None):
+        # Check if user is admin (role = 0)
+        if not hasattr(request.user, "role") or request.user.role != 0:
+            return Response(
+                {"error": "Access denied. Admin privileges required."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Get query parameters for filtering
+        status_filter = request.query_params.get("status", None)
+        payment_method_filter = request.query_params.get("payment_method", None)
+
+        # Base queryset
+        orders = Order.objects.all().order_by("-created_at")
+
+        # Apply filters
+        if status_filter:
+            orders = orders.filter(payment_status=status_filter)
+        if payment_method_filter:
+            orders = orders.filter(payment_method=payment_method_filter)
+
+        # Serialize orders
+        orders_serializer = OrderSerializer(orders, many=True)
+
+        return Response(
+            {
+                "orders": orders_serializer.data,
+                "total_orders": orders.count(),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def patch(self, request, format=None):
+        # Allow admin to update order status
+        if not hasattr(request.user, "role") or request.user.role != 0:
+            return Response(
+                {"error": "Access denied. Admin privileges required."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        order_id = request.data.get("order_id")
+        new_status = request.data.get("status")
+
+        if not order_id or not new_status:
+            return Response(
+                {"error": "order_id and status are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            order = Order.objects.get(id=order_id)
+            order.payment_status = new_status
+            order.save()
+
+            # Create notification for user
+            Notification.objects.create(
+                user=order.user,
+                notification_type="order",
+                message=f"Your order #{order.id} status has been updated to {new_status}.",
+            )
+
+            return Response(
+                {
+                    "message": f"Order {order_id} status updated to {new_status}",
+                    "order": OrderSerializer(order).data,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Order.DoesNotExist:
+            return Response(
+                {"error": "Order not found."}, status=status.HTTP_404_NOT_FOUND
+            )

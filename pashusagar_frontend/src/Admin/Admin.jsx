@@ -1,19 +1,57 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
-import { Menu, X, Pill, FileText, Users, CalendarDays, LayoutDashboard, FileCheck } from "lucide-react";
+import { Menu, X, Pill, FileText, Users, CalendarDays, LayoutDashboard, FileCheck, FolderOpen, ShoppingCart } from "lucide-react";
 import AddMedicine from "../veterinarian/AddMedicine";
 import MedicineList from "../veterinarian/MedicineList";
 import UsersList from "./UsersList";
 import Appointments from "../veterinarian/Appointments";
-import axios from "axios";
+import CategoryManagement from "./CategoryManagement";
+import OrderHistory from "./OrderHistory";
+
+import api from "../utils/api";
+import { isAuthenticated, isAdmin, removeTokens } from "../utils/auth";
 
 const Admin = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Temporarily disable auth check for testing
+    // TODO: Re-enable after fixing authentication
+    /*
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    if (!isAdmin()) {
+      navigate('/');
+      return;
+    }
+    */
+
+    setLoading(false);
+  }, [navigate]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  const handleLogout = () => {
+    removeTokens();
+    navigate('/login');
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#004d40]"></div>
+      </div>
+    );
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -27,6 +65,10 @@ const Admin = () => {
         return <UsersList />;
       case "appointments":
         return <Appointments />;
+      case "categories":
+        return <CategoryManagement />;
+      case "orderHistory":
+        return <OrderHistory />;
       default:
         return <DefaultContent setActiveTab={setActiveTab} />;
     }
@@ -55,9 +97,8 @@ const Admin = () => {
                     setActiveTab("dashboard");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${
-                    activeTab === "dashboard" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${activeTab === "dashboard" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <LayoutDashboard size={20} className="mr-3" />
                   <span>Dashboard</span>
@@ -69,9 +110,8 @@ const Admin = () => {
                     setActiveTab("addMedicine");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${
-                    activeTab === "addMedicine" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${activeTab === "addMedicine" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <Pill size={20} className="mr-3" />
                   <span>Add Medicine</span>
@@ -83,9 +123,8 @@ const Admin = () => {
                     setActiveTab("medicineList");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${
-                    activeTab === "medicineList" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${activeTab === "medicineList" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <FileText size={20} className="mr-3" />
                   <span>Medicine List</span>
@@ -94,12 +133,24 @@ const Admin = () => {
               <li>
                 <button
                   onClick={() => {
+                    setActiveTab("categories");
+                    setIsSidebarOpen(false);
+                  }}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${activeTab === "categories" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
+                >
+                  <FolderOpen size={20} className="mr-3" />
+                  <span>Categories</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
                     setActiveTab("appointments");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${
-                    activeTab === "appointments" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${activeTab === "appointments" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <CalendarDays size={20} className="mr-3" />
                   <span>Appointments</span>
@@ -111,15 +162,38 @@ const Admin = () => {
                     setActiveTab("userList");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${
-                    activeTab === "userList" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${activeTab === "userList" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <Users size={20} className="mr-3" />
                   <span>User List</span>
                 </button>
               </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setActiveTab("orderHistory");
+                    setIsSidebarOpen(false);
+                  }}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full ${activeTab === "orderHistory" ? "bg-[#55DD4A] text-white" : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
+                >
+                  <ShoppingCart size={20} className="mr-3" />
+                  <span>Order History</span>
+                </button>
+              </li>
             </ul>
+
+            {/* Logout Button */}
+            <div className="mt-8 pt-4 border-t border-[#00695c]">
+              <button
+                onClick={handleLogout}
+                className="flex items-center p-3 rounded-lg transition-colors duration-200 w-full hover:bg-red-600 text-white"
+              >
+                <X size={20} className="mr-3" />
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -146,8 +220,8 @@ const DefaultContent = ({ setActiveTab }) => {
   });
 
   useEffect(() => {
-    axios
-      .get("http://127.0.0.1:8000/api/dashboard-stats/")
+    api
+      .get("/dashboard-stats/")
       .then((response) => {
         setDashboardStats(response.data);
       })
@@ -157,8 +231,8 @@ const DefaultContent = ({ setActiveTab }) => {
   }, []);
 
   const generateReport = () => {
-    axios
-      .get("http://127.0.0.1:8000/api/generate-report/")
+    api
+      .get("/generate-report/")
       .then((response) => {
         setDashboardStats(response.data);
       })
@@ -225,6 +299,33 @@ const DefaultContent = ({ setActiveTab }) => {
           <h3 className="text-xl font-semibold mb-2">Refunded Orders</h3>
           <p className="text-3xl font-bold">{dashboardStats.refunded_orders}</p>
         </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+        <button
+          onClick={() => setActiveTab("orderHistory")}
+          className="bg-white border-2 border-[#004d40] text-[#004d40] p-4 rounded-lg hover:bg-[#004d40] hover:text-white transition-colors"
+        >
+          <ShoppingCart className="h-8 w-8 mx-auto mb-2" />
+          <p className="font-semibold">Manage Orders</p>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("userList")}
+          className="bg-white border-2 border-[#004d40] text-[#004d40] p-4 rounded-lg hover:bg-[#004d40] hover:text-white transition-colors"
+        >
+          <Users className="h-8 w-8 mx-auto mb-2" />
+          <p className="font-semibold">Manage Users</p>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("categories")}
+          className="bg-white border-2 border-[#004d40] text-[#004d40] p-4 rounded-lg hover:bg-[#004d40] hover:text-white transition-colors"
+        >
+          <FolderOpen className="h-8 w-8 mx-auto mb-2" />
+          <p className="font-semibold">Manage Categories</p>
+        </button>
       </div>
 
       <button

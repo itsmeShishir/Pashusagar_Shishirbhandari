@@ -1,7 +1,7 @@
 // React Signup Component (Already provided by you)
 import React, { useState } from "react";
-import axios from "axios";
 import { NavLink, useNavigate } from "react-router-dom";
+import api from "../utils/api";
 import { Eye, EyeOff } from "lucide-react";
 import Navbar from "../Components/Navbar";
 
@@ -35,17 +35,14 @@ const Signup = () => {
     }
 
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/auth/register/user/",
-        {
-          username, 
-          email,
-          phone_number: phoneNumber, 
-          password,
-          password2: confirmPassword,
-          role: 1, 
-        }
-      );
+      const response = await api.post("/auth/register/user/", {
+        username,
+        email,
+        phone_number: phoneNumber,
+        password,
+        password2: confirmPassword,
+        role: 1,
+      });
 
       console.log(response.data);
       setSuccess("Registration successful! Redirecting to login...");

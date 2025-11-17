@@ -5,11 +5,11 @@ import UserPage from "./pages/UserPage"
 function App() {
 
   return (
-    <div className="scroll-smooth">
-      <Navbar/>
-      <UserPage/>
-      <Footer/>
-     
+    <div className="">
+      <Navbar />
+      <UserPage />
+      <Footer />
+
     </div>
   )
 }

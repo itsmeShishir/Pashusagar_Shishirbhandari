@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Trash2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import Breadcrumbs from '../Components/BreadCrumbs';
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
@@ -12,6 +13,7 @@ import axios from 'axios';
 const Cart = () => {
   const cartItems = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
 
   // Shipping info states
   const [shippingName, setShippingName] = useState('');
@@ -27,7 +29,27 @@ const Cart = () => {
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [stockLevels, setStockLevels] = useState({});
 
-  // 1. Load any saved cart from localStorage
+  // 1. Check for payment success parameters and clear cart if needed
+  useEffect(() => {
+    const orderId = searchParams.get('order_id');
+    const status = searchParams.get('status');
+    const paymentStatus = searchParams.get('payment_status');
+
+    if (orderId || status === 'success' || paymentStatus === 'completed') {
+      dispatch(clearCart());
+      toast.success('Payment successful! Your cart has been cleared.', {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "colored",
+        style: {
+          background: "#004D40",
+          color: "white",
+        },
+      });
+    }
+  }, [searchParams, dispatch]);
+
+  // 2. Load any saved cart from localStorage
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
@@ -42,7 +64,7 @@ const Cart = () => {
     }
   }, [dispatch]);
 
-  // 2. Fetch stock levels & adjust cart if needed
+  // 3. Fetch stock levels & adjust cart if needed
   useEffect(() => {
     const fetchStockLevels = async () => {
       try {
@@ -56,12 +78,12 @@ const Cart = () => {
           stocks[response.data.id] = response.data.stock;
         });
         setStockLevels(stocks);
-        
+
         cartItems.forEach(item => {
           if (item.quantity > stocks[item.id]) {
-            dispatch(updateQuantity({ 
-              id: item.id, 
-              quantity: stocks[item.id] 
+            dispatch(updateQuantity({
+              id: item.id,
+              quantity: stocks[item.id]
             }));
             toast.warning(
               `Quantity for ${item.title} adjusted to available stock of ${stocks[item.id]}`
@@ -78,12 +100,12 @@ const Cart = () => {
     }
   }, [cartItems, dispatch]);
 
-  // 3. Calculate total
+  // 4. Calculate total
   const calculateTotal = () => {
     return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  // 4. Handle quantity update
+  // 5. Handle quantity update
   const handleUpdateQuantity = (id, newQuantity) => {
     if (newQuantity < 1) return;
 
@@ -102,12 +124,12 @@ const Cart = () => {
     dispatch(updateQuantity({ id, quantity: newQuantity }));
   };
 
-  // 5. Remove item from cart
+  // 6. Remove item from cart
   const handleRemoveItem = (id) => {
     dispatch(removeFromCart(id));
   };
 
-  // 6. Purchase button
+  // 7. Purchase button
   const handlePurchase = () => {
     // Validate stock levels again
     const stockValidation = cartItems.every(item => {
@@ -135,7 +157,7 @@ const Cart = () => {
     setShowConfirmDialog(true);
   };
 
-  // 7. Final confirm
+  // 8. Final confirm
   const handleConfirmOrder = async () => {
     setLoadingPayment(true);
     setError("");
@@ -160,24 +182,23 @@ const Cart = () => {
         return;
       }
 
-      // 7a. Prepare request to your backend
+      // 8a. Prepare request to your backend
       const token = localStorage.getItem("token");
       const payload = {
         payment_method: paymentMethod,
-
-        // Include shipping fields
         shipping_name: shippingName,
         shipping_phone: shippingPhone,
         shipping_address: shippingAddress,
         shipping_city: shippingCity,
         shipping_state: shippingState,
         shipping_zip: shippingZip,
-
         items: cartItems.map(item => ({
           product: item.id,
           quantity: item.quantity,
         })),
       };
+
+      console.log("Sending payment request:", payload);
 
       const response = await axios.post(
         "http://127.0.0.1:8000/api/initiate-payment/",
@@ -190,23 +211,52 @@ const Cart = () => {
         }
       );
 
-      // 7b. If user selected Khalti
+      console.log("Payment response:", response.data);
+
+      // 8b. Handle response based on payment method
       if (paymentMethod === 'Khalti') {
-        if (response.data.payment_url) {
-          window.location.href = response.data.payment_url; // Redirect to Khalti
+        if (response.data.success && response.data.payment_url) {
+          // Store order info before redirect
+          localStorage.setItem('pending_order_id', response.data.order_id);
+
+          // Redirect to Khalti payment page
+          window.location.href = response.data.payment_url;
         } else {
-          // Fallback in case the URL isn't provided
-          setError("Failed to retrieve Khalti payment URL. Please try again.");
+          setError(response.data.error || "Failed to initiate Khalti payment. Please try again.");
         }
       } else {
-        // 7c. If user selected COD, we can finalize immediately
-        toast.success("Order placed successfully with Cash on Delivery!");
-        dispatch(clearCart());
-        setShowConfirmDialog(false);
+        // 8c. Cash on Delivery success
+        if (response.data.success) {
+          toast.success("Order placed successfully with Cash on Delivery!", {
+            position: "top-right",
+            autoClose: 3000,
+            theme: "colored",
+            style: {
+              background: "#004D40",
+              color: "white",
+            },
+          });
+          dispatch(clearCart());
+          setShowConfirmDialog(false);
+
+          // Redirect to success page
+          setTimeout(() => {
+            window.location.href = `/payment-success?order_id=${response.data.order_id}&payment_method=cod`;
+          }, 1000);
+        } else {
+          setError(response.data.error || "Failed to place order. Please try again.");
+        }
       }
     } catch (err) {
-      console.error(err);
-      setError("Failed to process order. Please try again.");
+      console.error("Payment error:", err);
+
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else if (err.response?.data?.details) {
+        setError(`Payment failed: ${JSON.stringify(err.response.data.details)}`);
+      } else {
+        setError("Failed to process order. Please check your connection and try again.");
+      }
     } finally {
       setLoadingPayment(false);
     }
@@ -381,7 +431,7 @@ const Cart = () => {
                   {/* Khalti Option */}
                   <label
                     className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors
-                      ${paymentMethod === 'Khalti' 
+                      ${paymentMethod === 'Khalti'
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-300'
                       }`}

@@ -7,7 +7,7 @@ from .serializers import (
     ProductSerializer,
     MessageSerializer,
     AppointmentSerializer,
-    ProductStockUpdateSerializer
+    ProductStockUpdateSerializer,
 )
 
 
@@ -47,7 +47,22 @@ class MessageListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Message.objects.filter(sender=user) | Message.objects.filter(recipient=user)
+        # Get conversation with specific user if provided
+        other_user_id = self.request.query_params.get("user_id")
+        if other_user_id:
+            from django.db import models
+
+            return Message.objects.filter(
+                (models.Q(sender=user) & models.Q(recipient_id=other_user_id))
+                | (models.Q(sender_id=other_user_id) & models.Q(recipient=user))
+            ).order_by("timestamp")
+
+        # Return all messages for the user
+        from django.db import models
+
+        return Message.objects.filter(
+            models.Q(sender=user) | models.Q(recipient=user)
+        ).order_by("-timestamp")
 
     def perform_create(self, serializer):
         serializer.save(sender=self.request.user)
@@ -65,6 +80,7 @@ from rest_framework.response import Response
 from .models import Appointment
 from .serializers import AppointmentSerializer
 from notifications.models import Notification
+
 
 class AppointmentDetailUpdateView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Appointment.objects.all()
@@ -85,7 +101,7 @@ class AppointmentDetailUpdateView(generics.RetrieveUpdateDestroyAPIView):
 
             if old_status != new_status:
                 message = f"Your appointment #{appointment.id} status has changed to {new_status}."
-                
+
                 # If the appointment is canceled, customize the message
                 if new_status.lower() == "cancelled":
                     message = f"Your appointment #{appointment.id} has been cancelled."
@@ -95,13 +111,19 @@ class AppointmentDetailUpdateView(generics.RetrieveUpdateDestroyAPIView):
                     Notification.objects.create(
                         user=appointment.customer,  # Make sure this field exists
                         notification_type="appointment",
-                        message=message
+                        message=message,
                     )
                 else:
-                    return Response({"error": "Customer field missing in appointment."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {"error": "Customer field missing in appointment."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-            return Response({"detail": "Appointment updated successfully."}, status=status.HTTP_200_OK)
-        
+            return Response(
+                {"detail": "Appointment updated successfully."},
+                status=status.HTTP_200_OK,
+            )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -113,12 +135,12 @@ class AppointmentListCreateView(generics.ListCreateAPIView):
         user = self.request.user
         if user.is_staff:
             return Appointment.objects.all()  # Admins see all appointments
-        return Appointment.objects.filter(customer=user)  # Customers only see their own appointments
+        return Appointment.objects.filter(
+            customer=user
+        )  # Customers only see their own appointments
 
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
-
-
 
 
 class VeterinarianAppointmentListView(generics.ListAPIView):
@@ -126,7 +148,9 @@ class VeterinarianAppointmentListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Appointment.objects.filter(veterinarian=self.request.user).order_by('-appointment_date')
+        return Appointment.objects.filter(veterinarian=self.request.user).order_by(
+            "-appointment_date"
+        )
 
 
 class AppointmentDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -144,9 +168,14 @@ class ProductRestockView(generics.UpdateAPIView):
         product = self.get_object()
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            quantity = serializer.validated_data['quantity']
+            quantity = serializer.validated_data["quantity"]
             product.restock(quantity)
-            return Response({'detail': f'Stock increased by {quantity}. Current stock: {product.stock}.'}, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "detail": f"Stock increased by {quantity}. Current stock: {product.stock}."
+                },
+                status=status.HTTP_200_OK,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -160,29 +189,38 @@ class ProductReduceStockView(generics.UpdateAPIView):
         product = self.get_object()
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            quantity = serializer.validated_data['quantity']
+            quantity = serializer.validated_data["quantity"]
             try:
                 product.reduce_stock(quantity)
-                return Response({'detail': f'Stock reduced by {quantity}. Current stock: {product.stock}.'}, status=status.HTTP_200_OK)
+                return Response(
+                    {
+                        "detail": f"Stock reduced by {quantity}. Current stock: {product.stock}."
+                    },
+                    status=status.HTTP_200_OK,
+                )
             except ValidationError as e:
-                return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 from .serializers import ProductSerializer
+
 
 class ProductSearchView(generics.ListAPIView):
     serializer_class = ProductSerializer
 
     def get_queryset(self):
         queryset = Product.objects.all()
-        query = self.request.query_params.get('q', None)
+        query = self.request.query_params.get("q", None)
         if query:
             queryset = queryset.filter(title__icontains=query)
         return queryset
 
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
 
 # API View to Fetch Dashboard Statistics
 class DashboardStatsView(APIView):
@@ -210,8 +248,27 @@ from rest_framework.response import Response
 from rest_framework import status
 from auths.models import CustomUser
 from orders.models import Order, OrderItem
+
+
+# Veterinarian List View
+class VeterinarianListView(generics.ListAPIView):
+    """
+    API view to list all veterinarians (users with role=2)
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        # Get all users with role=2 (veterinarians)
+        veterinarians = CustomUser.objects.filter(role=2).values(
+            "id", "username", "first_name", "last_name", "email"
+        )
+        return Response(list(veterinarians), status=status.HTTP_200_OK)
+
+
 from .serializers import AdminDashboardSerializer, ReportSerializer
 from django.db.models import Sum, Q
+
 
 class AdminDashboardView(APIView):
     def get(self, request):
@@ -219,7 +276,12 @@ class AdminDashboardView(APIView):
         total_products = Product.objects.count()
         total_appointments = Appointment.objects.count()
         total_orders = Order.objects.count()
-        total_revenue = OrderItem.objects.aggregate(total_revenue=Sum('product__price'))['total_revenue'] or 0
+        total_revenue = (
+            OrderItem.objects.aggregate(total_revenue=Sum("product__price"))[
+                "total_revenue"
+            ]
+            or 0
+        )
 
         data = {
             "total_users": total_users,
@@ -239,7 +301,12 @@ class AdminReportView(APIView):
         total_products = Product.objects.count()
         total_appointments = Appointment.objects.count()
         total_orders = Order.objects.count()
-        total_revenue = OrderItem.objects.aggregate(total_revenue=Sum('product__price'))['total_revenue'] or 0
+        total_revenue = (
+            OrderItem.objects.aggregate(total_revenue=Sum("product__price"))[
+                "total_revenue"
+            ]
+            or 0
+        )
 
         pending_orders = Order.objects.filter(payment_status="Pending").count()
         completed_orders = Order.objects.filter(payment_status="Completed").count()
@@ -260,3 +327,15 @@ class AdminReportView(APIView):
 
         serializer = ReportSerializer(report_data)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# Veterinarian List View
+class VeterinarianListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        # Get all users with veterinarian role (role=2)
+        veterinarians = CustomUser.objects.filter(role=2).values(
+            "id", "username", "email", "first_name", "last_name"
+        )
+        return Response(list(veterinarians), status=status.HTTP_200_OK)

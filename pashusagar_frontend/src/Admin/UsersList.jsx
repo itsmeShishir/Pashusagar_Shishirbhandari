@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import axios from "axios"
+import api from "../utils/api"
 
 const UsersList = () => {
   const [users, setUsers] = useState([])
@@ -15,12 +15,7 @@ const UsersList = () => {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem("token")
-      const response = await axios.get("http://127.0.0.1:8000/api/auth/users/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      const response = await api.get("/auth/users/")
       setUsers(response.data)
       setLoading(false)
     } catch (err) {
@@ -83,15 +78,14 @@ const UsersList = () => {
           <tbody>
             {userList.map((user) => (
               <tr key={user.id} className="border-b hover:bg-gray-100">
-                <td className="p-2 sm:p-3 text-xs sm:text-sm">{user.name}</td>
+                <td className="p-2 sm:p-3 text-xs sm:text-sm">{user.username}</td>
                 <td className="p-2 sm:p-3 text-xs sm:text-sm">{user.email}</td>
                 <td className="p-2 sm:p-3">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      user.status === "Active"
-                        ? "bg-green-200 text-green-800"
-                        : "bg-red-200 text-red-800"
-                    }`}
+                    className={`px-2 py-1 rounded-full text-xs ${user.status === "Active"
+                      ? "bg-green-200 text-green-800"
+                      : "bg-red-200 text-red-800"
+                      }`}
                   >
                     {user.status}
                   </span>

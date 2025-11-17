@@ -17,6 +17,7 @@ import fourStar from "../assets/4star.png";
 import fiveStar from "../assets/5star.png";
 import Aboutus from "../Components/Aboutus";
 import FAQS from "../Components/FAQS";
+import FeaturedSections from "../Components/FeaturedSections";
 import { NavLink } from "react-router";
 
 const UserPage = () => {
@@ -190,9 +191,9 @@ const UserPage = () => {
               <button className="relative mt-7 flex items-center  border p-3 rounded-2xl text-black overflow-hidden group">
                 <span className="absolute inset-0 bg-[#55DD4A] scale-x-0 origin-right transition-transform duration-300 group-hover:scale-x-100 z-0"></span>
                 <NavLink to={service.path} className="relative z-10 flex items-center gap-x-4">
-                Explore{" "}
-                <MoveRight className="transition-transform duration-300 transform group-hover:translate-x-2" />
-              </NavLink>
+                  Explore{" "}
+                  <MoveRight className="transition-transform duration-300 transform group-hover:translate-x-2" />
+                </NavLink>
               </button>
             </div>
           ))}
@@ -233,9 +234,12 @@ const UserPage = () => {
           ))}
         </Slider>
       </div>
+
+      <FeaturedSections />
+
       <Aboutus />
-      <FAQS/>
-      
+      <FAQS />
+
 
 
 

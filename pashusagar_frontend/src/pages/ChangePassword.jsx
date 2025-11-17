@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Components/Navbar";
-import axios from "axios";
+import api from "../utils/api";
 
 const ChangePassword = () => {
   const [formData, setFormData] = useState({
@@ -37,18 +37,10 @@ const ChangePassword = () => {
 
     if (!validateForm()) return;
 
-    const token = localStorage.getItem("token");
+    // Token is handled automatically by the api utility
 
     try {
-      await axios.put(
-        "http://127.0.0.1:8000/api/auth/change-password/",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await api.put("/auth/change-password/", formData);
       toast.success("Password updated successfully!");
       setTimeout(() => {
         navigate("/dashboard"); // or wherever you want to redirect after success
@@ -82,8 +74,8 @@ const ChangePassword = () => {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="old_password"
                 >
                   Current Password
@@ -101,8 +93,8 @@ const ChangePassword = () => {
               </div>
 
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="new_password"
                 >
                   New Password
@@ -120,8 +112,8 @@ const ChangePassword = () => {
               </div>
 
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="new_password2"
                 >
                   Confirm New Password
@@ -150,8 +142,8 @@ const ChangePassword = () => {
           </div>
         </div>
       </div>
-      <ToastContainer 
-        position="top-right" 
+      <ToastContainer
+        position="top-right"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={true}

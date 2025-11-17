@@ -2,19 +2,21 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../Components/Navbar";
-import { 
-  Menu, 
-  X, 
-  PlusCircle, 
-  List, 
-  CalendarDays, 
-  LayoutDashboard, 
-  BookOpen, 
-  Edit3 
+import {
+  Menu,
+  X,
+  PlusCircle,
+  List,
+  CalendarDays,
+  LayoutDashboard,
+  BookOpen,
+  Edit3,
+  MessageCircle
 } from "lucide-react";
 import AddMedicine from "./AddMedicine";
 import MedicineList from "./MedicineList";
 import Appointments from "./Appointments";
+import VetChatRoom from "../Components/VetChatRoom";
 
 // Blog Component that displays blog entries in a table format with Edit/Delete actions
 const Blog = () => {
@@ -436,6 +438,8 @@ const VeterinarianPage = () => {
         return <MedicineList />;
       case "appointments":
         return <Appointments />;
+      case "chat":
+        return <VetChatRoom />;
       case "blog":
         return <Blog />;
       case "addBlog":
@@ -457,9 +461,8 @@ const VeterinarianPage = () => {
         </button>
 
         <aside
-          className={`bg-gradient-to-b from-[#004d40] to-[#00695c] text-white w-64 fixed lg:static h-[calc(100vh-64px)] overflow-y-auto transition-transform duration-300 ease-in-out z-40 ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-          }`}
+          className={`bg-gradient-to-b from-[#004d40] to-[#00695c] text-white w-64 fixed lg:static h-[calc(100vh-64px)] overflow-y-auto transition-transform duration-300 ease-in-out z-40 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+            }`}
         >
           <div className="sticky top-0 p-6">
             <div
@@ -475,11 +478,10 @@ const VeterinarianPage = () => {
                     setActiveTab("dashboard");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${
-                    activeTab === "dashboard"
-                      ? "bg-[#55DD4A] text-white"
-                      : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${activeTab === "dashboard"
+                    ? "bg-[#55DD4A] text-white"
+                    : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <LayoutDashboard
                     size={20}
@@ -495,11 +497,10 @@ const VeterinarianPage = () => {
                     setActiveTab("addMedicine");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${
-                    activeTab === "addMedicine"
-                      ? "bg-[#55DD4A] text-white"
-                      : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${activeTab === "addMedicine"
+                    ? "bg-[#55DD4A] text-white"
+                    : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <PlusCircle className="mr-2 group-hover:scale-110 transition-transform" />
                   <span className="ml-2">Add Medicine</span>
@@ -512,11 +513,10 @@ const VeterinarianPage = () => {
                     setActiveTab("medicineList");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${
-                    activeTab === "medicineList"
-                      ? "bg-[#55DD4A] text-white"
-                      : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${activeTab === "medicineList"
+                    ? "bg-[#55DD4A] text-white"
+                    : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <List className="mr-2 group-hover:scale-110 transition-transform" />
                   <span className="ml-2">Medicine List</span>
@@ -529,11 +529,10 @@ const VeterinarianPage = () => {
                     setActiveTab("appointments");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${
-                    activeTab === "appointments"
-                      ? "bg-[#55DD4A] text-white"
-                      : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${activeTab === "appointments"
+                    ? "bg-[#55DD4A] text-white"
+                    : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <CalendarDays className="mr-2 group-hover:scale-110 transition-transform" />
                   <span className="ml-2">Appointments</span>
@@ -543,14 +542,29 @@ const VeterinarianPage = () => {
               <li>
                 <button
                   onClick={() => {
+                    setActiveTab("chat");
+                    setIsSidebarOpen(false);
+                  }}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${activeTab === "chat"
+                    ? "bg-[#55DD4A] text-white"
+                    : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
+                >
+                  <MessageCircle className="mr-2 group-hover:scale-110 transition-transform" />
+                  <span className="ml-2">Patient Chat</span>
+                </button>
+              </li>
+
+              <li>
+                <button
+                  onClick={() => {
                     setActiveTab("blog");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${
-                    activeTab === "blog"
-                      ? "bg-[#55DD4A] text-white"
-                      : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${activeTab === "blog"
+                    ? "bg-[#55DD4A] text-white"
+                    : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <BookOpen className="mr-2 group-hover:scale-110 transition-transform" />
                   <span className="ml-2">Blog</span>
@@ -563,11 +577,10 @@ const VeterinarianPage = () => {
                     setActiveTab("addBlog");
                     setIsSidebarOpen(false);
                   }}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${
-                    activeTab === "addBlog"
-                      ? "bg-[#55DD4A] text-white"
-                      : "hover:bg-[#55DD4A] hover:text-white"
-                  }`}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 w-full group ${activeTab === "addBlog"
+                    ? "bg-[#55DD4A] text-white"
+                    : "hover:bg-[#55DD4A] hover:text-white"
+                    }`}
                 >
                   <Edit3 className="mr-2 group-hover:scale-110 transition-transform" />
                   <span className="ml-2">Add Blog</span>

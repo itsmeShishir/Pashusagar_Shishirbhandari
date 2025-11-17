@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
-import { GoogleLogin } from "@react-oauth/google"; 
+import { GoogleLogin } from "@react-oauth/google";
+import { setTokens, setUserData } from "../utils/auth";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -24,7 +25,15 @@ const Login = () => {
       );
       console.log("Login response:", response.data);
 
-      const { access, username, email: userEmail, role } = response.data;
+      const {
+        access,
+        refresh,
+        role,
+        user_id,
+        phone,
+        email: userEmail,
+        username,
+      } = response.data;
 
       if (role === undefined || role === null) {
         throw new Error("Role not found in the response.");
@@ -32,9 +41,12 @@ const Login = () => {
 
       // Save user data in localStorage (or your preferred store)
       localStorage.setItem("token", access);
+      localStorage.setItem("user_id", user_id);
       localStorage.setItem("username", username);
       localStorage.setItem("email", userEmail);
       localStorage.setItem("role", role);
+      setTokens(access, refresh);
+      setUserData({ user_id, email: userEmail, username, phone, role });
 
       // Redirect based on role
       if (role === 0) {
@@ -68,7 +80,8 @@ const Login = () => {
       console.log("Google Login response:", response.data);
 
       // Your backend should return tokens & user info
-      const { access, role, user_id, email, first_name, last_name } = response.data;
+      const { access, refresh, role, user_id, email, first_name, last_name } =
+        response.data;
 
       // Store tokens/user data as desired. Here, we set "username" for Navbar.
       localStorage.setItem("token", access);
@@ -77,6 +90,8 @@ const Login = () => {
       localStorage.setItem("user_id", user_id);
       localStorage.setItem("first_name", first_name);
       localStorage.setItem("last_name", last_name);
+      setTokens(access, refresh);
+      setUserData({ user_id, email, username: first_name || email, role });
 
       // Set username (for example, use first_name or a combination)
       const username = first_name || email;

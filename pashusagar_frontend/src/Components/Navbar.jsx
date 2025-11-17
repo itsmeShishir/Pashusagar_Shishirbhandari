@@ -153,52 +153,47 @@ const Navbar = () => {
   // Submenu for logged-in user
   const ProfileMenu = ({ isMobile = false }) => (
     <div
-      className={`${
-        isMobile
-          ? "bg-[#005d4f] mt-2"
-          : "absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg"
-      } overflow-hidden`}
+      className={`${isMobile
+        ? "bg-[#005d4f] mt-2"
+        : "absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg"
+        } overflow-hidden`}
     >
       <NavLink
         to="/myaccount"
-        className={`block px-4 py-2 ${
-          isMobile
-            ? "text-white hover:bg-[#006d5f]"
-            : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
-        } transition-colors duration-200`}
+        className={`block px-4 py-2 ${isMobile
+          ? "text-white hover:bg-[#006d5f]"
+          : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
+          } transition-colors duration-200`}
         onClick={() => isMobile && toggleMenu()}
       >
         My Account
       </NavLink>
       <NavLink
         to="/history"
-        className={`block px-4 py-2 ${
-          isMobile
-            ? "text-white hover:bg-[#006d5f]"
-            : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
-        } transition-colors duration-200`}
+        className={`block px-4 py-2 ${isMobile
+          ? "text-white hover:bg-[#006d5f]"
+          : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
+          } transition-colors duration-200`}
         onClick={() => isMobile && toggleMenu()}
       >
         History
       </NavLink>
       <NavLink
         to="/changepassword"
-        className={`block px-4 py-2 ${
-          isMobile
-            ? "text-white hover:bg-[#006d5f]"
-            : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
-        } transition-colors duration-200`}
+        className={`block px-4 py-2 ${isMobile
+          ? "text-white hover:bg-[#006d5f]"
+          : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
+          } transition-colors duration-200`}
         onClick={() => isMobile && toggleMenu()}
       >
         Change Password
       </NavLink>
       <NavLink
         to="/updateprofile"
-        className={`block px-4 py-2 ${
-          isMobile
-            ? "text-white hover:bg-[#006d5f]"
-            : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
-        } transition-colors duration-200`}
+        className={`block px-4 py-2 ${isMobile
+          ? "text-white hover:bg-[#006d5f]"
+          : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
+          } transition-colors duration-200`}
         onClick={() => isMobile && toggleMenu()}
       >
         Update Profile
@@ -206,11 +201,10 @@ const Navbar = () => {
       {role === "seller" && (
         <NavLink
           to="/seller/dashboard"
-          className={`block px-4 py-2 ${
-            isMobile
-              ? "text-white hover:bg-[#006d5f]"
-              : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
-          } transition-colors duration-200`}
+          className={`block px-4 py-2 ${isMobile
+            ? "text-white hover:bg-[#006d5f]"
+            : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
+            } transition-colors duration-200`}
           onClick={() => isMobile && toggleMenu()}
         >
           Seller Dashboard
@@ -219,11 +213,10 @@ const Navbar = () => {
       {role === "admin" && (
         <NavLink
           to="/admin/dashboard"
-          className={`block px-4 py-2 ${
-            isMobile
-              ? "text-white hover:bg-[#006d5f]"
-              : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
-          } transition-colors duration-200`}
+          className={`block px-4 py-2 ${isMobile
+            ? "text-white hover:bg-[#006d5f]"
+            : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
+            } transition-colors duration-200`}
           onClick={() => isMobile && toggleMenu()}
         >
           Admin Dashboard
@@ -232,11 +225,10 @@ const Navbar = () => {
       {role === "user" && (
         <NavLink
           to="/user/dashboard"
-          className={`block px-4 py-2 ${
-            isMobile
-              ? "text-white hover:bg-[#006d5f]"
-              : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
-          } transition-colors duration-200`}
+          className={`block px-4 py-2 ${isMobile
+            ? "text-white hover:bg-[#006d5f]"
+            : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
+            } transition-colors duration-200`}
           onClick={() => isMobile && toggleMenu()}
         >
           User Dashboard
@@ -247,11 +239,10 @@ const Navbar = () => {
           handleLogout();
           isMobile && toggleMenu();
         }}
-        className={`w-full px-4 py-2 text-left ${
-          isMobile
-            ? "text-white hover:bg-[#006d5f]"
-            : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
-        } transition-colors duration-200`}
+        className={`w-full px-4 py-2 text-left ${isMobile
+          ? "text-white hover:bg-[#006d5f]"
+          : "text-gray-700 hover:bg-[#55DD4A] hover:text-white"
+          } transition-colors duration-200`}
       >
         <FaSignOutAlt className="inline mr-2" />
         Logout
@@ -386,7 +377,9 @@ const Navbar = () => {
             <div className="flex ml-24 space-x-4 xl:space-x-8">
               {[
                 { to: "/", label: "Home" },
+                { to: "/products", label: "Products" },
                 { to: "/pharmacy", label: "Pharmacy" },
+                { to: "/blogs", label: "Blog" },
                 { to: "/online-booking", label: "Booking" },
                 { to: "/online-consultation", label: "Online Consultation" },
               ].map((link) => (
@@ -486,14 +479,15 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         <div
-          className={`lg:hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen ? "max-h-screen opacity-100 visible" : "max-h-0 opacity-0 invisible"
-          }`}
+          className={`lg:hidden transition-all duration-300 ease-in-out ${isMenuOpen ? "max-h-screen opacity-100 visible" : "max-h-0 opacity-0 invisible"
+            }`}
         >
           <div className="py-4 space-y-2">
             {[
               { to: "/", label: "Home" },
+              { to: "/products", label: "Products" },
               { to: "/pharmacy", label: "Pharmacy" },
+              { to: "/blogs", label: "Blog" },
               { to: "/online-booking", label: "Booking" },
               { to: "/online-consultation", label: "Online Consultation" },
             ].map((link) => (
@@ -519,9 +513,8 @@ const Navbar = () => {
                   <span className="mr-2">Profile Menu</span>
                   <ChevronDown
                     size={20}
-                    className={`transform transition-transform duration-200 ${
-                      isMobileProfileOpen ? "rotate-180" : ""
-                    }`}
+                    className={`transform transition-transform duration-200 ${isMobileProfileOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
                 {isMobileProfileOpen && <ProfileMenu isMobile={true} />}

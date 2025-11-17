@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
-import axios from "axios";
+import api from "../utils/api";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -19,12 +19,7 @@ const UpdateProfile = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    axios
-      .get("http://127.0.0.1:8000/api/auth/profile/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+    api.get("/auth/profile/")
       .then((response) => {
         setProfile({
           username: response.data.username || "",
@@ -45,7 +40,7 @@ const UpdateProfile = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const maxSize = 10 * 1024 * 1024; 
+      const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
         toast.error("File is too large. Please select an image under 10MB.");
         return;
@@ -57,11 +52,7 @@ const UpdateProfile = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Not authenticated. Please login again.");
-      return;
-    }
+    // Token is handled automatically by the api utility
 
     const formData = new FormData();
     formData.append("username", profile.username);
@@ -71,28 +62,26 @@ const UpdateProfile = () => {
       formData.append("profile_image", profile.profile_image);
     }
 
-    axios
-      .put("http://127.0.0.1:8000/api/auth/profile/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      })
+    api.put("/auth/profile/", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
       .then((response) => {
         localStorage.setItem("username", response.data.username);
         localStorage.setItem("email", response.data.email);
         if (response.data.profile_image) {
           localStorage.setItem("profile_image", response.data.profile_image);
         }
-        
+
         setProfile(initialState);
         toast.success("Profile updated successfully!");
-        
+
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) {
           fileInput.value = '';
         }
-        
+
         setTimeout(() => {
           window.location.reload();
         }, 2000);
@@ -134,8 +123,8 @@ const UpdateProfile = () => {
               </div>
 
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="username"
                 >
                   Username
@@ -153,8 +142,8 @@ const UpdateProfile = () => {
               </div>
 
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="email"
                 >
                   Email Address
@@ -172,8 +161,8 @@ const UpdateProfile = () => {
               </div>
 
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="phone_number"
                 >
                   Phone Number
@@ -190,8 +179,8 @@ const UpdateProfile = () => {
               </div>
 
               <div>
-                <label 
-                  className="block text-sm font-medium text-gray-700 mb-1" 
+                <label
+                  className="block text-sm font-medium text-gray-700 mb-1"
                   htmlFor="profile_image"
                 >
                   Profile Image
@@ -221,8 +210,8 @@ const UpdateProfile = () => {
           </div>
         </div>
       </div>
-      <ToastContainer 
-        position="top-right" 
+      <ToastContainer
+        position="top-right"
         autoClose={2000}
         hideProgressBar={false}
         newestOnTop={true}
