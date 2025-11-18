@@ -2,22 +2,22 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import axios from "axios"
 
 export const fetchMedicines = createAsyncThunk("medicines/fetchMedicines", async () => {
-  const response = await axios.get("http://127.0.0.1:8000/api/products/")
+  const response = await axios.get("http://localhost:8000/api/products/")
   return response.data
 })
 
 export const addMedicine = createAsyncThunk("medicines/addMedicine", async (medicineData) => {
-  const response = await axios.post("http://127.0.0.1:8000/api/products/", medicineData)
+  const response = await axios.post("http://localhost:8000/api/products/", medicineData)
   return response.data
 })
 
 export const updateMedicine = createAsyncThunk("medicines/updateMedicine", async ({ id, medicineData }) => {
-  const response = await axios.put(`http://127.0.0.1:8000/api/products/${id}/`, medicineData)
+  const response = await axios.put(`http://localhost:8000/api/products/${id}/`, medicineData)
   return response.data
 })
 
 export const deleteMedicine = createAsyncThunk("medicines/deleteMedicine", async (id) => {
-  await axios.delete(`http://127.0.0.1:8000/api/products/${id}/`)
+  await axios.delete(`http://localhost:8000/api/products/${id}/`)
   return id
 })
 

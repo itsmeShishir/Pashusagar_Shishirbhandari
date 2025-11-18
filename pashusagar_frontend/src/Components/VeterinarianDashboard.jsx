@@ -33,7 +33,7 @@ const VeterinarianDashboard = () => {
             setAppointments(appointmentsResponse.data);
 
             // Fetch recent messages
-            const messagesResponse = await api.get('/messages/');
+            const messagesResponse = await api.get('/api/messages/');
             setMessages(messagesResponse.data.slice(0, 5)); // Get last 5 messages
 
         } catch (err) {

@@ -40,7 +40,7 @@ const ChangePassword = () => {
     // Token is handled automatically by the api utility
 
     try {
-      await api.put("/auth/change-password/", formData);
+      await api.put("/api/auth/change-password/", formData);
       toast.success("Password updated successfully!");
       setTimeout(() => {
         navigate("/dashboard"); // or wherever you want to redirect after success

@@ -61,14 +61,33 @@ INSTALLED_APPS = [
 
 # Channels settings
 ASGI_APPLICATION = "core.asgi.application"
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+
+# Redis configuration with fallback
+REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+
+# Try Redis first, fallback to in-memory for development
+try:
+    import redis
+
+    # Test Redis connection
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, socket_timeout=1)
+    r.ping()
+
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [(REDIS_HOST, REDIS_PORT)],
+            },
         },
-    },
-}
+    }
+    print(f"✓ Connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
+except Exception as e:
+    print(f"⚠ Redis connection failed ({e}), using in-memory channel layer")
+    CHANNEL_LAYERS = {
+        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"},
+    }
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -165,13 +184,15 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+# CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+#     "http://localhost:5173",
+#     "http://127.0.0.1:5173",
+#     "http://frontend:80",
+#     "http://localhost:80",
+# ]
 
 # WebSocket CORS settings
 CORS_ALLOW_WEBSOCKETS = True
@@ -224,6 +245,7 @@ KHALTI_SECRET_KEY = "b31bf9ea80f44e378c6a3d8bc20c05cb"
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

@@ -36,7 +36,7 @@ const QuickLogin = () => {
 
     const testDashboard = async () => {
         try {
-            const response = await api.get('/dashboard-stats/');
+            const response = await api.get('/api/dashboard-stats/');
             setResult(prev => prev + `\n✅ Dashboard call successful: ${JSON.stringify(response.data)}`);
         } catch (error) {
             setResult(prev => prev + `\n❌ Dashboard call failed: ${error.response?.data?.detail || error.message}`);

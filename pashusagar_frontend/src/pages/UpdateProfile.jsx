@@ -19,7 +19,7 @@ const UpdateProfile = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    api.get("/auth/profile/")
+    api.get("/api/auth/profile/")
       .then((response) => {
         setProfile({
           username: response.data.username || "",
@@ -62,7 +62,7 @@ const UpdateProfile = () => {
       formData.append("profile_image", profile.profile_image);
     }
 
-    api.put("/auth/profile/", formData, {
+    api.put("/api/auth/profile/", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

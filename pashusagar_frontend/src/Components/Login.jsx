@@ -119,7 +119,7 @@ const Login = () => {
   return (
     <>
       <Navbar />
-      <div className="bg-gradient-to-b from-[#00574B] to-[#009366] h-screen flex justify-center items-center">
+      <div className="bg-gradient-to-b from-[#00574B] to-[#009366] min-h-screen py-12 flex justify-center items-center">
         <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm sm:max-w-lg md:max-w-xl">
           <h1 className="text-2xl font-bold text-center text-[#00574B]">
             Sign in to your account
@@ -190,12 +190,12 @@ const Login = () => {
           </div>
 
           {/* Google Login Button */}
-          <div className="flex justify-center">
+          {/* <div className="flex justify-center">
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}
             />
-          </div>
+          </div> */}
 
           <p className="text-sm text-center text-gray-500 mt-4">
             Don’t have an account yet?{" "}

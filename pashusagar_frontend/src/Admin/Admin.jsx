@@ -221,7 +221,7 @@ const DefaultContent = ({ setActiveTab }) => {
 
   useEffect(() => {
     api
-      .get("/dashboard-stats/")
+      .get("/api/dashboard-stats/")
       .then((response) => {
         setDashboardStats(response.data);
       })

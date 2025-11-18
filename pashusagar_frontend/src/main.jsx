@@ -11,7 +11,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId="454950803546-rg80qss7iid6kml6qlhlnui4anr61i6i.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "454950803546-rg80qss7iid6kml6qlhlnui4anr61i6i.apps.googleusercontent.com"}>
       <Provider store={store}>
         <MyRoute />
       </Provider>

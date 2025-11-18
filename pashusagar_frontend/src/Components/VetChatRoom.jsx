@@ -31,7 +31,7 @@ const VetChatRoom = () => {
         const fetchPatients = async () => {
             try {
                 // Get all messages where this vet is the recipient or sender
-                const response = await api.get("/messages/");
+                const response = await api.get("/api/messages/");
 
                 // Extract unique patients from messages
                 const uniquePatients = new Map();
@@ -76,7 +76,7 @@ const VetChatRoom = () => {
             if (!selectedPatient || !token) return;
 
             try {
-                const response = await api.get("/messages/", {
+                const response = await api.get("/api/messages/", {
                     params: { user_id: selectedPatient },
                 });
 
@@ -219,7 +219,7 @@ const VetChatRoom = () => {
 
     return (
         <div className="border rounded-lg shadow-lg max-w-4xl mx-auto my-8 bg-white">
-            <div className="flex h-96">
+            <div className="flex h-80">
                 {/* Patient List Sidebar */}
                 <div className="w-1/3 border-r bg-gray-50 p-4">
                     <h3 className="text-lg font-semibold mb-4">Patient Conversations</h3>
@@ -239,8 +239,8 @@ const VetChatRoom = () => {
                                     key={patient.id}
                                     onClick={() => setSelectedPatient(patient.id)}
                                     className={`w-full text-left p-3 rounded-lg transition-colors ${selectedPatient === patient.id
-                                            ? "bg-blue-100 border-blue-300 border"
-                                            : "bg-white hover:bg-gray-100 border border-gray-200"
+                                        ? "bg-blue-100 border-blue-300 border"
+                                        : "bg-white hover:bg-gray-100 border border-gray-200"
                                         }`}
                                 >
                                     <div className="font-medium">{patient.name}</div>
@@ -274,8 +274,8 @@ const VetChatRoom = () => {
                                 >
                                     <div
                                         className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${msg.sender_id == senderId
-                                                ? "bg-blue-500 text-white"
-                                                : "bg-white border"
+                                            ? "bg-blue-500 text-white"
+                                            : "bg-white border"
                                             }`}
                                     >
                                         <div className="font-medium text-sm mb-1">

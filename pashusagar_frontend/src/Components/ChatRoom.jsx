@@ -37,7 +37,7 @@ const ChatRoom = () => {
   useEffect(() => {
     const fetchVets = async () => {
       try {
-        const response = await api.get("/vets/");
+        const response = await api.get("/api/vets/");
         setVets(response.data);
         if (response.data.length > 0) {
           setSelectedVet(response.data[0].id);
@@ -64,7 +64,7 @@ const ChatRoom = () => {
       if (!selectedVet || !token) return;
 
       try {
-        const response = await api.get("/messages/", {
+        const response = await api.get("/api/messages/", {
           params: { user_id: selectedVet },
         });
 
@@ -256,7 +256,7 @@ const ChatRoom = () => {
         </div>
       )}
 
-      <div className="h-80 overflow-y-auto border rounded-lg p-4 mb-4 bg-gray-50">
+      <div className="h-64 overflow-y-auto border rounded-lg p-4 mb-4 bg-gray-50">
         {messages.length === 0 ? (
           <p className="text-gray-500 text-center">
             No messages yet. Start the conversation!

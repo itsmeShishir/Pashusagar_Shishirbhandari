@@ -1,0 +1,54 @@
+services:
+  # Redis service for Django Channels
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Django backend in development mode
+  backend:
+    build: 
+      context: ./pashusagar_backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./pashusagar_backend:/app
+      - media_files:/app/media
+    environment:
+      - DEBUG=True
+      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    # Uses the startup script from Dockerfile
+
+  # React frontend in development mode
+  frontend:
+    build:
+      context: ./pashusagar_frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./pashusagar_frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  media_files:

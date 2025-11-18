@@ -1,0 +1,2 @@
+cd "/home/ajnalab-01/Downloads/Pashusagar_Shishirbhandari/pashusagar_backend"
+&& source env/bin/activate && daphne -b 0.0.0.0 -p 8000 core.asgi:application

@@ -14,15 +14,15 @@ const UsersList = () => {
   }, [])
   const token = localStorage.getItem("token");
   const config = {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      };
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get("/auth/users/", config)
+      const response = await api.get("/api/auth/users/", config)
       setUsers(response.data)
       setLoading(false)
     } catch (err) {

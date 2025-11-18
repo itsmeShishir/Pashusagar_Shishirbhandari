@@ -209,10 +209,10 @@ const UserPage = () => {
         </h1>
         <hr className="mt-5 border-[#ADE1B0]" />
 
-        <Slider {...settings} className="mt-16 mb-20 px-4">
+        <Slider {...settings} className="mt-12 mb-12 px-4">
           {testimonials.map((testimonial, index) => (
             <div key={index} className="px-4">
-              <div className="bg-white rounded-lg shadow-lg p-6 text-center h-80 flex flex-col justify-between">
+              <div className="bg-white rounded-lg shadow-lg p-6 text-center h-auto min-h-64 flex flex-col justify-between">
                 <div>
                   <img
                     src={testimonial.icon}

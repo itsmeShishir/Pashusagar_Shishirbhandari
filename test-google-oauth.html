@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Google OAuth Test</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+
+<body>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
+        <h1>Google OAuth Test</h1>
+        <p>This page tests if your Google OAuth configuration is working correctly.</p>
+
+        <div id="g_id_onload" data-client_id="454950803546-rg80qss7iid6kml6qlhlnui4anr61i6i.apps.googleusercontent.com"
+            data-callback="handleCredentialResponse">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
+
+        <div id="result" style="margin-top: 20px; padding: 10px; border-radius: 5px;"></div>
+    </div>
+
+    <script>
+        function handleCredentialResponse(response) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.backgroundColor = '#d4edda';
+            resultDiv.style.color = '#155724';
+            resultDiv.innerHTML = `
+                <h3>✅ Google OAuth Success!</h3>
+                <p>Token received: ${response.credential.substring(0, 50)}...</p>
+                <p>Your OAuth configuration is working correctly!</p>
+            `;
+            console.log("Encoded JWT ID token: " + response.credential);
+        }
+
+        window.addEventListener('error', function (e) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.backgroundColor = '#f8d7da';
+            resultDiv.style.color = '#721c24';
+            resultDiv.innerHTML = `
+                <h3>❌ OAuth Error</h3>
+                <p>Error: ${e.message}</p>
+                <p>Check the console for more details.</p>
+            `;
+        });
+    </script>
+</body>
+
+</html>

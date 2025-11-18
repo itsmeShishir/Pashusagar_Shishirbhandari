@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebSocket Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .connecting {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        #messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        input,
+        button {
+            padding: 8px;
+            margin: 5px;
+        }
+
+        input[type="text"] {
+            width: 300px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>WebSocket Connection Test</h1>
+
+        <div id="status" class="status disconnected">Disconnected</div>
+
+        <div>
+            <input type="text" id="wsUrl" value="ws://localhost:8000/ws/chat/consultation/" placeholder="WebSocket URL">
+            <button onclick="connect()">Connect</button>
+            <button onclick="disconnect()">Disconnect</button>
+        </div>
+
+        <div id="messages"></div>
+
+        <div>
+            <input type="text" id="messageInput" placeholder="Type a message..."
+                onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+
+        <div>
+            <h3>Test Message Templates:</h3>
+            <button onclick="sendTestMessage()">Send Test Message</button>
+            <button onclick="clearMessages()">Clear Messages</button>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        const statusDiv = document.getElementById('status');
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const wsUrlInput = document.getElementById('wsUrl');
+
+        function updateStatus(message, className) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${className}`;
+        }
+
+        function addMessage(message, type = 'info') {
+            const div = document.createElement('div');
+            div.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            div.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function connect() {
+            const url = wsUrlInput.value;
+
+            if (socket) {
+                socket.close();
+            }
+
+            updateStatus('Connecting...', 'connecting');
+            addMessage(`Attempting to connect to: ${url}`, 'info');
+
+            socket = new WebSocket(url);
+
+            socket.onopen = function (event) {
+                updateStatus('Connected', 'connected');
+                addMessage('WebSocket connection established!', 'success');
+            };
+
+            socket.onmessage = function (event) {
+                addMessage(`Received: ${event.data}`, 'success');
+            };
+
+            socket.onerror = function (event) {
+                updateStatus('Connection Error', 'disconnected');
+                addMessage('WebSocket error occurred', 'error');
+                console.error('WebSocket error:', event);
+            };
+
+            socket.onclose = function (event) {
+                updateStatus('Disconnected', 'disconnected');
+                addMessage(`Connection closed (Code: ${event.code}, Reason: ${event.reason})`, 'error');
+            };
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.close();
+                socket = null;
+            }
+        }
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !socket || socket.readyState !== WebSocket.OPEN) {
+                addMessage('Cannot send message: not connected or empty message', 'error');
+                return;
+            }
+
+            const messageData = {
+                sender: "1",  // Test user ID
+                recipient: "2",  // Test vet ID
+                message: message
+            };
+
+            socket.send(JSON.stringify(messageData));
+            addMessage(`Sent: ${message}`, 'info');
+            messageInput.value = '';
+        }
+
+        function sendTestMessage() {
+            const testMessage = {
+                sender: "1",
+                recipient: "2",
+                message: "Hello, this is a test message from the WebSocket test page!"
+            };
+
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify(testMessage));
+                addMessage(`Sent test message`, 'info');
+            } else {
+                addMessage('Cannot send test message: not connected', 'error');
+            }
+        }
+
+        function clearMessages() {
+            messagesDiv.innerHTML = '';
+        }
+
+        // Auto-connect on page load
+        window.onload = function () {
+            addMessage('WebSocket Test Page Loaded', 'info');
+            addMessage('Click "Connect" to test the WebSocket connection', 'info');
+        };
+    </script>
+</body>
+
+</html>

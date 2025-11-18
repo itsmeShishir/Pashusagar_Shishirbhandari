@@ -19,7 +19,7 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
         try {
             setLoading(true);
-            const response = await api.get("/admin/orders/", {
+            const response = await api.get("/api/admin/orders/", {
                 params: {
                     status: filters.status || undefined,
                     payment_method: filters.payment_method || undefined,
@@ -44,7 +44,7 @@ const OrderHistory = () => {
 
     const updateOrderStatus = async (orderId, newStatus) => {
         try {
-            await api.patch("/admin/orders/", {
+            await api.patch("/api/admin/orders/", {
                 order_id: orderId,
                 status: newStatus,
             });
@@ -236,7 +236,7 @@ const OrderHistory = () => {
                                     <option value="Pending">Pending</option>
                                     <option value="Completed">Completed</option>
                                     <option value="Failed">Failed</option>
-                                    <option value="Refunded">Refunded</option>
+                                    <option value="Refunded">Refundeds</option>
                                 </select>
                             </div>
                         </div>
